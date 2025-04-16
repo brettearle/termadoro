@@ -2,9 +2,12 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
+	"sync"
+	"time"
 )
 
 const (
@@ -35,11 +38,79 @@ func RingAlarm(bell ringer) error {
 }
 
 func Run(stdout io.Writer, bell ringer) error {
-	// a predifined config
-
+	//********PROTOTYPE**********
+	// a predifined schedule
+	schedule := struct {
+		workInMins int
+		restInMins int
+	}{
+		workInMins: 10,
+		restInMins: 2,
+	}
 	// Starts timer
+	tickCh := make(chan struct {
+		t     time.Time
+		count int
+	}, 1)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		capacity := schedule.workInMins
+		current := 0
+		ticker := time.NewTicker(time.Second)
+		for i := range ticker.C {
+			fmt.Printf("work: %v\n", i)
+			tickCh <- struct {
+				t     time.Time
+				count int
+			}{
+				t:     i,
+				count: current,
+			}
+			current += 1
+			if current == capacity {
+				break
+			}
+		}
+		err := RingAlarm(bell)
+		if err != nil {
+			stdout.Write([]byte(FAILED_BELL))
+		}
+		capacity = schedule.restInMins
+		current = 0
+		for i := range ticker.C {
+			fmt.Printf("rest: %v\n", i)
+			tickCh <- struct {
+				t     time.Time
+				count int
+			}{
+				t:     i,
+				count: current,
+			}
+			current += 1
+			if current == capacity {
+				break
+			}
+		}
+		close(tickCh)
+		wg.Done()
+	}()
 
 	// Draws to terminal every second as a time or progress bar
+	for i := range tickCh {
+		cmd := exec.Command("clear")
+		cmd.Stdout = os.Stdout
+		cmd.Run()
+		str := "#"
+		for idx := i.count; idx > 0; idx-- {
+			str = str + "#"
+		}
+		fmt.Printf("%v\n%v\n", str, i.count)
+	}
+
+	wg.Wait()
+	fmt.Println("ticker done")
+	//********END OF PROTOTYPE*****************
 
 	// Pings when done
 	err := RingAlarm(bell)
