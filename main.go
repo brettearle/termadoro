@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	SUCCESS     = "Termadoro Success"
-	FAILED_BELL = "Failed to sound bell"
+	SUCCESS     = "Termadoro Success\n"
+	FAILED_BELL = "Failed to sound bell\n"
 )
 
 type ringer interface {
@@ -37,7 +37,19 @@ func RingAlarm(bell ringer) error {
 	return nil
 }
 
-func Run(stdout io.Writer, bell ringer) error {
+type Schedule struct {
+	Work int
+	Rest int
+}
+
+func Scheduler(work, rest int) Schedule {
+	return Schedule{
+		Work: 0,
+		Rest: 0,
+	}
+}
+
+func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 	//********PROTOTYPE**********
 	// a predifined schedule
 	schedule := struct {
@@ -74,7 +86,7 @@ func Run(stdout io.Writer, bell ringer) error {
 		}
 		err := RingAlarm(bell)
 		if err != nil {
-			stdout.Write([]byte(FAILED_BELL))
+			stderr.Write([]byte(FAILED_BELL))
 		}
 		capacity = schedule.restInMins
 		current = 0
@@ -115,7 +127,7 @@ func Run(stdout io.Writer, bell ringer) error {
 	// Pings when done
 	err := RingAlarm(bell)
 	if err != nil {
-		stdout.Write([]byte(FAILED_BELL))
+		stderr.Write([]byte(FAILED_BELL))
 		return errors.New(FAILED_BELL)
 	}
 
@@ -125,5 +137,5 @@ func Run(stdout io.Writer, bell ringer) error {
 }
 
 func main() {
-	Run(os.Stdout, &bell{})
+	Run(os.Args, os.Stdout, os.Stderr, &bell{})
 }

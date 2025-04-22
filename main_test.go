@@ -24,10 +24,12 @@ func (ma *alarmerFail) Ring() error {
 }
 
 func TestRun(t *testing.T) {
-
+	if testing.Short() {
+		t.Skip()
+	}
 	t.Run("Succesful run", func(t *testing.T) {
 		stdout := new(bytes.Buffer)
-		Run(stdout, &alarmerSuccess{})
+		Run(nil, stdout, nil, &alarmerSuccess{})
 		want := SUCCESS
 		if stdout.String() != want {
 			t.Errorf("got %v want %v", stdout.String(), want)
@@ -35,11 +37,11 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("Failed run", func(t *testing.T) {
-		stdout := new(bytes.Buffer)
-		err := Run(stdout, &alarmerFail{})
-		want := FAILED_BELL
-		if stdout.String() != want {
-			t.Errorf("got %v want %v", stdout.String(), want)
+		stderr := new(bytes.Buffer)
+		err := Run(nil, nil, stderr, &alarmerFail{})
+		want := FAILED_BELL + FAILED_BELL
+		if stderr.String() != want {
+			t.Errorf("got %v want %v", stderr.String(), want)
 		}
 		if err == nil {
 			t.Errorf("want error but got nil")
@@ -47,8 +49,18 @@ func TestRun(t *testing.T) {
 	})
 }
 
-func TestAlarm(t *testing.T) {
+func TestScheduler(t *testing.T) {
+	t.Run("Scheduler", func(t *testing.T) {
+		work := 3
+		rest := 2
+		got := Scheduler(work, rest)
+		if got.Work != work {
+			t.Errorf("want %v but got %v", work, got.Work)
+		}
+	})
+}
 
+func TestAlarm(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		testAlarm := alarmerSuccess{
 			result: "",
@@ -74,5 +86,4 @@ func TestAlarm(t *testing.T) {
 			t.Errorf("got %v want %v", testAlarm.result, "")
 		}
 	})
-
 }
