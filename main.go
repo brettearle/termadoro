@@ -6,13 +6,15 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strconv"
 	"sync"
 	"time"
 )
 
 const (
-	SUCCESS     = "Termadoro Success\n"
-	FAILED_BELL = "Failed to sound bell\n"
+	SUCCESS      = "Termadoro Success\n"
+	FAILED_BELL  = "Failed to sound bell\n"
+	FAILED_SCHED = "Schedule args not numbers\n"
 )
 
 type ringer interface {
@@ -44,21 +46,30 @@ type Schedule struct {
 
 func Scheduler(work, rest int) Schedule {
 	return Schedule{
-		Work: 0,
-		Rest: 0,
+		Work: work,
+		Rest: rest,
 	}
 }
 
 func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
-	//********PROTOTYPE**********
 	// a predifined schedule
-	schedule := struct {
-		workInMins int
-		restInMins int
-	}{
-		workInMins: 10,
-		restInMins: 2,
+	var schedule Schedule
+	//update schedule on args
+	if len(args) >= 3 {
+		work, errWork := strconv.Atoi(args[1])
+		rest, errRest := strconv.Atoi(args[2])
+		if errWork != nil || errRest != nil {
+			stderr.Write([]byte(FAILED_SCHED))
+			return errors.New(FAILED_SCHED)
+		}
+		schedule = Scheduler(work, rest)
+	} else {
+		schedule = Schedule{
+			Work: 1,
+			Rest: 1,
+		}
 	}
+	//********PROTOTYPE**********
 	// Starts timer
 	tickCh := make(chan struct {
 		t     time.Time
@@ -67,7 +78,7 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
-		capacity := schedule.workInMins
+		capacity := schedule.Work
 		current := 0
 		ticker := time.NewTicker(time.Second)
 		for i := range ticker.C {
@@ -88,7 +99,7 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 		if err != nil {
 			stderr.Write([]byte(FAILED_BELL))
 		}
-		capacity = schedule.restInMins
+		capacity = schedule.Rest
 		current = 0
 		for i := range ticker.C {
 			fmt.Printf("rest: %v\n", i)
@@ -117,7 +128,7 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 		for idx := i.count; idx > 0; idx-- {
 			str = str + "#"
 		}
-		fmt.Printf("%v\n%v\n", str, i.count)
+		fmt.Printf("%v\n%v\n", str, i.count+1)
 	}
 
 	wg.Wait()

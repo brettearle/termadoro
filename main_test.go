@@ -29,7 +29,7 @@ func TestRun(t *testing.T) {
 	}
 	t.Run("Succesful run", func(t *testing.T) {
 		stdout := new(bytes.Buffer)
-		Run(nil, stdout, nil, &alarmerSuccess{})
+		Run([]string{}, stdout, nil, &alarmerSuccess{})
 		want := SUCCESS
 		if stdout.String() != want {
 			t.Errorf("got %v want %v", stdout.String(), want)
@@ -46,6 +46,27 @@ func TestRun(t *testing.T) {
 		if err == nil {
 			t.Errorf("want error but got nil")
 		}
+
+	})
+
+	t.Run("Scheduled Run work arg not int", func(t *testing.T) {
+		stderr := new(bytes.Buffer)
+		stdout := new(bytes.Buffer)
+		Run([]string{"nameOfBinary", "under test", "1"}, stdout, stderr, &alarmerSuccess{})
+		want := "Schedule args not numbers\n"
+		if stderr.String() != want {
+			t.Errorf("got %v want %v", stderr.String(), want)
+		}
+	})
+
+	t.Run("Scheduled Run rest arg not int", func(t *testing.T) {
+		stderr := new(bytes.Buffer)
+		stdout := new(bytes.Buffer)
+		Run([]string{"nameOfBinary", "1", "under test"}, stdout, stderr, &alarmerSuccess{})
+		want := "Schedule args not numbers\n"
+		if stderr.String() != want {
+			t.Errorf("got %v want %v", stderr.String(), want)
+		}
 	})
 }
 
@@ -56,6 +77,9 @@ func TestScheduler(t *testing.T) {
 		got := Scheduler(work, rest)
 		if got.Work != work {
 			t.Errorf("want %v but got %v", work, got.Work)
+		}
+		if got.Rest != rest {
+			t.Errorf("want %v but got %v", work, got.Rest)
 		}
 	})
 }
