@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -42,15 +43,29 @@ func RingAlarm(bell ringer) error {
 }
 
 type Schedule struct {
-	Work int
-	Rest int
+	Work float64
+	Rest float64
 }
 
-func Scheduler(work, rest int) Schedule {
+func Scheduler(work, rest float64) Schedule {
 	return Schedule{
 		Work: work,
 		Rest: rest,
 	}
+}
+func FormatHalfSeconds(c float64) (string, error) {
+	minSec := c / 60 / 2
+	strCount := strconv.FormatFloat(minSec, 'f', 2, 64)
+	minSecArr := strings.Split(strCount, ".")
+	minutes := minSecArr[0]
+	secondsDecimal, err := strconv.Atoi(minSecArr[1])
+	if err != nil {
+		return "", errors.New("Format Failed")
+	}
+	secondsNum := 60 * (float64(secondsDecimal) / 100)
+	seconds := strconv.FormatFloat(secondsNum, 'f', 0, 64)
+	result := minutes + ":" + seconds
+	return result, nil
 }
 
 func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
@@ -58,28 +73,29 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 	var schedule Schedule
 	//update schedule on args
 	if len(args) >= 3 {
-		work, errWork := strconv.Atoi(args[1])
-		rest, errRest := strconv.Atoi(args[2])
+		work, errWork := strconv.ParseFloat(args[1], 64)
+		rest, errRest := strconv.ParseFloat(args[2], 64)
 		if errWork != nil || errRest != nil {
 			stderr.Write([]byte(FAILED_SCHED))
 			return errors.New(FAILED_SCHED)
 		}
-		schedule = Scheduler(work, rest)
+		schedule = Scheduler(float64(work), float64(rest))
 	} else {
 		schedule = Schedule{
-			Work: 1,
-			Rest: 1,
+			Work: 0.0001,
+			Rest: 0.0001,
 		}
 	}
 	//********PROTOTYPE**********
 	// Starts timer
 	tickCh := make(chan struct {
 		t         time.Time
-		count     int
+		count     float64
 		clocktype string
 	}, 1)
 	wg := sync.WaitGroup{}
 	wg.Add(1)
+	// *schedule, *wg,
 	go func() {
 		// this combines schedule to half seconds
 		current := schedule.Work * 60 * 2
@@ -87,7 +103,7 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 		ticker := time.NewTicker(time.Second / 2)
 		tickCh <- struct {
 			t         time.Time
-			count     int
+			count     float64
 			clocktype string
 		}{
 			t:         time.Time{},
@@ -99,7 +115,7 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 			fmt.Printf("work: %v\n", i)
 			tickCh <- struct {
 				t         time.Time
-				count     int
+				count     float64
 				clocktype string
 			}{
 				t:         i,
@@ -107,7 +123,7 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 				clocktype: "work",
 			}
 			current -= 1
-			if current == 0 {
+			if current <= 0 {
 				break
 			}
 		}
@@ -120,7 +136,7 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 			fmt.Printf("rest: %v\n", i)
 			tickCh <- struct {
 				t         time.Time
-				count     int
+				count     float64
 				clocktype string
 			}{
 				t:         i,
@@ -128,7 +144,7 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 				clocktype: "rest",
 			}
 			current -= 1
-			if current == 0 {
+			if current <= 0 {
 				break
 			}
 		}
@@ -146,11 +162,19 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 		if v.clocktype == "work" {
 			workArt.Draw(stdout)
 			workArt.Next()
-			fmt.Printf("%v\n", v.count)
+			fmtCount, err := FormatHalfSeconds(v.count)
+			if err != nil {
+				fmt.Println("failed to format count")
+			}
+			fmt.Printf("%v\n", fmtCount)
 		} else {
 			restArt.Draw(stdout)
 			restArt.Next()
-			fmt.Printf("%v\n", v.count)
+			fmtCount, err := FormatHalfSeconds(v.count)
+			if err != nil {
+				fmt.Println("failed to format count")
+			}
+			fmt.Printf("%v\n", fmtCount)
 		}
 	}
 

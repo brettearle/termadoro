@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"errors"
+	"strings"
 	"testing"
 )
 
@@ -29,16 +30,19 @@ func TestRun(t *testing.T) {
 	}
 	t.Run("Succesful run", func(t *testing.T) {
 		stdout := new(bytes.Buffer)
-		Run([]string{}, stdout, nil, &alarmerSuccess{})
-		want := SUCCESS
-		if stdout.String() != want {
-			t.Errorf("got %v want %v", stdout.String(), want)
+		stderr := new(bytes.Buffer)
+		Run([]string{"nameOfBinary", "0.0001", "0.0001"}, stdout, stderr, &alarmerSuccess{})
+		// want := SUCCESS
+		got := strings.Contains(stdout.String(), SUCCESS)
+		if !got {
+			t.Errorf("got %v want %v in contains", got, SUCCESS)
 		}
 	})
 
 	t.Run("Failed run", func(t *testing.T) {
 		stderr := new(bytes.Buffer)
-		err := Run(nil, nil, stderr, &alarmerFail{})
+		stdout := new(bytes.Buffer)
+		err := Run([]string{"nameOfBinary", "0.0001", "0.0001"}, stdout, stderr, &alarmerFail{})
 		want := FAILED_BELL + FAILED_BELL
 		if stderr.String() != want {
 			t.Errorf("got %v want %v", stderr.String(), want)
@@ -52,7 +56,7 @@ func TestRun(t *testing.T) {
 	t.Run("Scheduled Run work arg not int", func(t *testing.T) {
 		stderr := new(bytes.Buffer)
 		stdout := new(bytes.Buffer)
-		Run([]string{"nameOfBinary", "under test", "1"}, stdout, stderr, &alarmerSuccess{})
+		Run([]string{"nameOfBinary", "under test", "0.0001"}, stdout, stderr, &alarmerSuccess{})
 		want := "Schedule args not numbers\n"
 		if stderr.String() != want {
 			t.Errorf("got %v want %v", stderr.String(), want)
@@ -61,7 +65,7 @@ func TestRun(t *testing.T) {
 	t.Run("Scheduled Run rest arg not int", func(t *testing.T) {
 		stderr := new(bytes.Buffer)
 		stdout := new(bytes.Buffer)
-		Run([]string{"nameOfBinary", "1", "under test"}, stdout, stderr, &alarmerSuccess{})
+		Run([]string{"nameOfBinary", "0.0001", "under test"}, stdout, stderr, &alarmerSuccess{})
 		want := "Schedule args not numbers\n"
 		if stderr.String() != want {
 			t.Errorf("got %v want %v", stderr.String(), want)
@@ -71,14 +75,49 @@ func TestRun(t *testing.T) {
 
 func TestScheduler(t *testing.T) {
 	t.Run("Scheduler", func(t *testing.T) {
-		work := 3
-		rest := 2
+		work := float64(0.0001)
+		rest := float64(0.0001)
 		got := Scheduler(work, rest)
 		if got.Work != work {
 			t.Errorf("want %v but got %v", work, got.Work)
 		}
 		if got.Rest != rest {
 			t.Errorf("want %v but got %v", work, got.Rest)
+		}
+	})
+}
+
+func TestFormatHalfSeconds(t *testing.T) {
+	t.Run("FormatCount 6000", func(t *testing.T) {
+		count := float64(6000)
+		got, _ := FormatHalfSeconds(count)
+		want := "50:0"
+		if got != want {
+			t.Errorf("want %v but got %v", want, got)
+		}
+	})
+	t.Run("FormatCount 3000", func(t *testing.T) {
+		count := float64(3000)
+		got, _ := FormatHalfSeconds(count)
+		want := "25:0"
+		if got != want {
+			t.Errorf("want %v but got %v", want, got)
+		}
+	})
+	t.Run("FormatCount 2678", func(t *testing.T) {
+		count := float64(2678)
+		got, _ := FormatHalfSeconds(count)
+		want := "22:19"
+		if got != want {
+			t.Errorf("want %v but got %v", want, got)
+		}
+	})
+	t.Run("FormatCount 2999", func(t *testing.T) {
+		count := float64(2999)
+		got, _ := FormatHalfSeconds(count)
+		want := "24:59"
+		if got != want {
+			t.Errorf("want %v but got %v", want, got)
 		}
 	})
 }

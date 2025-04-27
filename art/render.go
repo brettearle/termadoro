@@ -1,9 +1,9 @@
-// art is the renderer for tdoro
+// art is the renderer for tdoro.
 package art
 
 import "io"
 
-// Is a single frame of a moving picture
+// Is a single frame of a moving picture.
 type Frame []byte
 
 // State of moving picture
@@ -20,13 +20,13 @@ func newReel(frs []*Frame) (Reel, error) {
 
 }
 
-// Draws current frame in Reel to writer
+// Draws current frame in Reel to writer.
 func (r *Reel) Draw(w io.Writer) {
 	w.Write(*r.frames[r.currentFrame])
 }
 
-// Moves currentFrame to next frame in sequence
-// If last frame in sequence goes back to the first
+// Moves currentFrame to next frame in sequence.
+// If last frame in sequence goes back to the first.
 func (r *Reel) Next() {
 	if r.currentFrame == len(r.frames)-1 {
 		r.currentFrame = 0
@@ -36,7 +36,6 @@ func (r *Reel) Next() {
 
 }
 
-// TODO:Remove this, currently untested
 func NewClockHeadWorkReel() Reel {
 	var byteStr1 Frame = []byte(ClockHeadWork1)
 	var byteStr2 Frame = []byte(ClockHeadWork2)
@@ -49,7 +48,6 @@ func NewClockHeadWorkReel() Reel {
 	}
 }
 
-// TODO:Remove this, currently untested
 func NewClockHeadRestReel() Reel {
 	var byteStr1 Frame = []byte(ClockHeadSleep1)
 	var byteStr2 Frame = []byte(ClockHeadSleep2)
