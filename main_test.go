@@ -58,7 +58,6 @@ func TestRun(t *testing.T) {
 			t.Errorf("got %v want %v", stderr.String(), want)
 		}
 	})
-
 	t.Run("Scheduled Run rest arg not int", func(t *testing.T) {
 		stderr := new(bytes.Buffer)
 		stdout := new(bytes.Buffer)

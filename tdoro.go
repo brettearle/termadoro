@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	art "github.com/brettearle/termadoro/art"
 )
 
 const (
@@ -72,17 +74,19 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 	//********PROTOTYPE**********
 	// Starts timer
 	tickCh := make(chan struct {
-		t     time.Time
-		count int
+		t         time.Time
+		count     int
+		clocktype string
 	}, 1)
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
 		current := schedule.Work
-		ticker := time.NewTicker(time.Minute)
+		ticker := time.NewTicker(time.Millisecond)
 		tickCh <- struct {
-			t     time.Time
-			count int
+			t         time.Time
+			count     int
+			clocktype string
 		}{
 			t:     time.Time{},
 			count: current,
@@ -91,8 +95,9 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 		for i := range ticker.C {
 			fmt.Printf("work: %v\n", i)
 			tickCh <- struct {
-				t     time.Time
-				count int
+				t         time.Time
+				count     int
+				clocktype string
 			}{
 				t:     i,
 				count: current,
@@ -110,8 +115,9 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 		for i := range ticker.C {
 			fmt.Printf("rest: %v\n", i)
 			tickCh <- struct {
-				t     time.Time
-				count int
+				t         time.Time
+				count     int
+				clocktype string
 			}{
 				t:     i,
 				count: current,
@@ -130,11 +136,16 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 		cmd := exec.Command("clear")
 		cmd.Stdout = os.Stdout
 		cmd.Run()
-		str := "#"
-		for idx := i.count; idx > 0; idx-- {
-			str = str + "#"
+		// TODO: rip this out
+		if i.count%4 == 0 {
+			fmt.Printf("%v\n%v\n", art.ClockHeadWork1, i.count)
+		} else if i.count%3 == 0 {
+			fmt.Printf("%v\n%v\n", art.ClockHeadWork2, i.count)
+		} else if i.count%2 == 0 {
+			fmt.Printf("%v\n%v\n", art.ClockHeadWork3, i.count)
+		} else {
+			fmt.Printf("%v\n%v\n", art.ClockHeadWork4, i.count)
 		}
-		fmt.Printf("%v\n%v\n", str, i.count)
 	}
 
 	wg.Wait()
