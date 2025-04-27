@@ -81,15 +81,18 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
-		current := schedule.Work
-		ticker := time.NewTicker(time.Millisecond)
+		// this combines schedule to half seconds
+		current := schedule.Work * 60 * 2
+		//ticks every half second
+		ticker := time.NewTicker(time.Second / 2)
 		tickCh <- struct {
 			t         time.Time
 			count     int
 			clocktype string
 		}{
-			t:     time.Time{},
-			count: current,
+			t:         time.Time{},
+			count:     current,
+			clocktype: "work",
 		}
 
 		for i := range ticker.C {
@@ -99,8 +102,9 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 				count     int
 				clocktype string
 			}{
-				t:     i,
-				count: current,
+				t:         i,
+				count:     current,
+				clocktype: "work",
 			}
 			current -= 1
 			if current == 0 {
@@ -111,7 +115,7 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 		if err != nil {
 			stderr.Write([]byte(FAILED_BELL))
 		}
-		current = schedule.Rest
+		current = schedule.Rest * 60 * 2
 		for i := range ticker.C {
 			fmt.Printf("rest: %v\n", i)
 			tickCh <- struct {
@@ -119,8 +123,9 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 				count     int
 				clocktype string
 			}{
-				t:     i,
-				count: current,
+				t:         i,
+				count:     current,
+				clocktype: "rest",
 			}
 			current -= 1
 			if current == 0 {
@@ -131,20 +136,21 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 		wg.Done()
 	}()
 
+	workArt := art.NewClockHeadWorkReel()
+	restArt := art.NewClockHeadRestReel()
 	// Draws to terminal every second as a time or progress bar
-	for i := range tickCh {
+	for v := range tickCh {
 		cmd := exec.Command("clear")
 		cmd.Stdout = os.Stdout
 		cmd.Run()
-		// TODO: rip this out
-		if i.count%4 == 0 {
-			fmt.Printf("%v\n%v\n", art.ClockHeadWork1, i.count)
-		} else if i.count%3 == 0 {
-			fmt.Printf("%v\n%v\n", art.ClockHeadWork2, i.count)
-		} else if i.count%2 == 0 {
-			fmt.Printf("%v\n%v\n", art.ClockHeadWork3, i.count)
+		if v.clocktype == "work" {
+			workArt.Draw(stdout)
+			workArt.Next()
+			fmt.Printf("%v\n", v.count)
 		} else {
-			fmt.Printf("%v\n%v\n", art.ClockHeadWork4, i.count)
+			restArt.Draw(stdout)
+			restArt.Next()
+			fmt.Printf("%v\n", v.count)
 		}
 	}
 

@@ -46,7 +46,7 @@ const ClockHeadWork1 = `
        \_________/
 `
 
-const clockHeadSleep5 = `\n
+const ClockHeadSleep5 = `
         ._______.         zzzz
        /    12   \     zzz
 		     zz
@@ -58,7 +58,7 @@ const clockHeadSleep5 = `\n
        \_________/
 `
 
-const clockHeadSleep1 = `\n
+const ClockHeadSleep1 = `
         ._______.         
        /    12   \     
 		     
@@ -69,7 +69,7 @@ const clockHeadSleep1 = `\n
             6
        \_________/
 `
-const clockHeadSleep4 = `\n
+const ClockHeadSleep4 = `
         ._______.         
        /    12   \     zzz
 		     zz
@@ -80,7 +80,7 @@ const clockHeadSleep4 = `\n
             6
        \_________/
 `
-const clockHeadSleep3 = `\n
+const ClockHeadSleep3 = `
         ._______.         
        /    12   \     
 		     zz
@@ -91,7 +91,7 @@ const clockHeadSleep3 = `\n
             6
        \_________/
 `
-const clockHeadSleep2 = `\n
+const ClockHeadSleep2 = `
         ._______.         
        /    12   \     
 		     
