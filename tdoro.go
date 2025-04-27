@@ -60,17 +60,6 @@ func FormatHalfSeconds(c float64) (string, error) {
 
 	timeStr := fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
 
-	// minSec := c / 60 / 2
-	// strCount := strconv.FormatFloat(minSec, 'f', 2, 64)
-	// minSecArr := strings.Split(strCount, ".")
-	// minutes := minSecArr[0]
-	// secondsDecimal, err := strconv.Atoi(minSecArr[1])
-	// if err != nil {
-	// 	return "", errors.New("Format Failed")
-	// }
-	// secondsNum := 60 * (float64(secondsDecimal) / 100)
-	// seconds := strconv.FormatFloat(secondsNum, 'f', 0, 64)
-	// result := minutes + ":" + seconds
 	return timeStr, nil
 }
 
