@@ -91,7 +91,7 @@ func TestFormatHalfSeconds(t *testing.T) {
 	t.Run("FormatCount 6000", func(t *testing.T) {
 		count := float64(6000)
 		got, _ := FormatHalfSeconds(count)
-		want := "50:0"
+		want := "00:50:00"
 		if got != want {
 			t.Errorf("want %v but got %v", want, got)
 		}
@@ -99,7 +99,7 @@ func TestFormatHalfSeconds(t *testing.T) {
 	t.Run("FormatCount 3000", func(t *testing.T) {
 		count := float64(3000)
 		got, _ := FormatHalfSeconds(count)
-		want := "25:0"
+		want := "00:25:00"
 		if got != want {
 			t.Errorf("want %v but got %v", want, got)
 		}
@@ -107,7 +107,7 @@ func TestFormatHalfSeconds(t *testing.T) {
 	t.Run("FormatCount 2678", func(t *testing.T) {
 		count := float64(2678)
 		got, _ := FormatHalfSeconds(count)
-		want := "22:19"
+		want := "00:22:19"
 		if got != want {
 			t.Errorf("want %v but got %v", want, got)
 		}
@@ -115,7 +115,7 @@ func TestFormatHalfSeconds(t *testing.T) {
 	t.Run("FormatCount 2999", func(t *testing.T) {
 		count := float64(2999)
 		got, _ := FormatHalfSeconds(count)
-		want := "24:59"
+		want := "00:24:59"
 		if got != want {
 			t.Errorf("want %v but got %v", want, got)
 		}
