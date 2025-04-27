@@ -52,6 +52,7 @@ func Scheduler(work, rest float64) Schedule {
 		Rest: rest,
 	}
 }
+
 func FormatHalfSeconds(c float64) (string, error) {
 	totalSeconds := int(c / 2)
 	hours := totalSeconds / 3600
@@ -161,7 +162,7 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 			if err != nil {
 				fmt.Println("failed to format count")
 			}
-			fmt.Printf("%v\n", fmtCount)
+			fmt.Printf("\t%v\n", fmtCount)
 		} else {
 			restArt.Draw(stdout)
 			restArt.Next()
@@ -169,7 +170,7 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 			if err != nil {
 				fmt.Println("failed to format count")
 			}
-			fmt.Printf("%v\n", fmtCount)
+			fmt.Printf("\t%v\n", fmtCount)
 		}
 	}
 
