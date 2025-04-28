@@ -1,7 +1,7 @@
 
 # Termadoro
 
-**Termadoro** is a lightweight, terminal-based Pomodoro timer designed for simplicity and productivity. It allows you to structure focused work sessions and breaks using the classic Pomodoro technique—directly from your command line.
+**Termadoro** is a lightweight, terminal-based Pomodoro timer designed for simplicity and productivity. It allows you to structure focused work sessions and breaks using the classic Pomodoro technique. Directly from your command line.
 
 ---
 
