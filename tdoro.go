@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"sync"
 	"time"
@@ -26,18 +27,31 @@ type ringer interface {
 type bell struct{}
 
 func (b *bell) Ring() error {
-	err := exec.Command("spd-say", "b b b b").Run()
-	if err != nil {
-		return errors.New("spd-say failed")
+	if runtime.GOOS == "darwin" {
+		err := exec.Command("say", "beeeeeep. That is time").Run()
+		if err != nil {
+			return errors.New("say failed")
+		}
+	} else {
+		err := exec.Command("spd-say", "beeeeep ahhh").Run()
+		if err != nil {
+			return errors.New("spd-say failed")
+		}
 	}
 	return nil
 }
 
 func RingAlarm(bell ringer) error {
-	err := bell.Ring()
-	if err != nil {
-		return errors.New(FAILED_BELL)
-	}
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		err := bell.Ring()
+		if err != nil {
+			fmt.Println("Failed to ring bell")
+		}
+		wg.Done()
+	}()
+	wg.Wait()
 	return nil
 }
 
@@ -108,7 +122,6 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 		}
 
 		for i := range ticker.C {
-			fmt.Printf("work: %v\n", i)
 			tickCh <- struct {
 				t         time.Time
 				count     float64
@@ -129,7 +142,6 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 		}
 		current = schedule.Rest * 60 * 2
 		for i := range ticker.C {
-			fmt.Printf("rest: %v\n", i)
 			tickCh <- struct {
 				t         time.Time
 				count     float64
