@@ -7,6 +7,36 @@
 
 ## 🚀 Installation
 
+You can install **Termadoro** (as the `tdoro` command) using a simple shell script. This works on most Linux and macOS systems with either `bash` or `zsh`.
+
+### ✅ One-Line Install (bash/zsh)
+
+Run this command in your terminal:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/brettearle/termadoro/main/install.sh | bash
+```
+
+Or, if you're using `zsh`:
+
+```zsh
+curl -sSL https://raw.githubusercontent.com/brettearle/termadoro/main/install.sh | zsh
+```
+
+This will:
+- Detect your OS and architecture
+- Download the correct binary from the latest GitHub release
+- Install it as `tdoro` in `/usr/local/bin`
+
+### 🧪 Manual Install
+
+If you’d prefer to review the script first:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/brettearle/termadoro/main/install.sh -o install.sh
+chmod +x install.sh
+./install.sh   # or bash install.sh / zsh install.sh
+```
 You can install Termadoro using `go install`:
 
 ```bash
