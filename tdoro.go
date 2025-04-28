@@ -6,12 +6,12 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"runtime"
 	"strconv"
 	"sync"
 	"time"
 
 	art "github.com/brettearle/termadoro/art"
+	alarm "github.com/brettearle/termadoro/internal"
 )
 
 const (
@@ -19,41 +19,6 @@ const (
 	FAILED_BELL  = "Failed to sound bell\n"
 	FAILED_SCHED = "Schedule args not numbers\n"
 )
-
-type ringer interface {
-	Ring() error
-}
-
-type bell struct{}
-
-func (b *bell) Ring() error {
-	if runtime.GOOS == "darwin" {
-		err := exec.Command("say", "beeeeeep. That is time").Run()
-		if err != nil {
-			return errors.New("say failed")
-		}
-	} else {
-		err := exec.Command("spd-say", "beeeeep ahhh").Run()
-		if err != nil {
-			return errors.New("spd-say failed")
-		}
-	}
-	return nil
-}
-
-func RingAlarm(bell ringer) error {
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		err := bell.Ring()
-		if err != nil {
-			fmt.Println("Failed to ring bell")
-		}
-		wg.Done()
-	}()
-	wg.Wait()
-	return nil
-}
 
 type Schedule struct {
 	Work float64
@@ -78,7 +43,7 @@ func FormatHalfSeconds(c float64) (string, error) {
 	return timeStr, nil
 }
 
-func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
+func Run(args []string, stdout, stderr io.Writer, bell alarm.Ringer) error {
 	// a predifined schedule
 	var schedule Schedule
 	//update schedule on args
@@ -96,7 +61,7 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 			Rest: 0.0001,
 		}
 	}
-	//********PROTOTYPE**********
+
 	// Starts timer
 	tickCh := make(chan struct {
 		t         time.Time
@@ -105,7 +70,6 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 	}, 1)
 	wg := sync.WaitGroup{}
 	wg.Add(1)
-	// *schedule, *wg,
 	go func() {
 		// this combines schedule to half seconds
 		current := schedule.Work * 60 * 2
@@ -136,7 +100,7 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 				break
 			}
 		}
-		err := RingAlarm(bell)
+		err := alarm.RingAlarm(bell)
 		if err != nil {
 			stderr.Write([]byte(FAILED_BELL))
 		}
@@ -188,10 +152,9 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 
 	wg.Wait()
 	fmt.Println("ticker done")
-	//********END OF PROTOTYPE*****************
 
 	// Pings when done
-	err := RingAlarm(bell)
+	err := alarm.RingAlarm(bell)
 	if err != nil {
 		stderr.Write([]byte(FAILED_BELL))
 		return errors.New(FAILED_BELL)
@@ -203,5 +166,5 @@ func Run(args []string, stdout, stderr io.Writer, bell ringer) error {
 }
 
 func main() {
-	Run(os.Args, os.Stdout, os.Stderr, &bell{})
+	Run(os.Args, os.Stdout, os.Stderr, &alarm.Bell{})
 }

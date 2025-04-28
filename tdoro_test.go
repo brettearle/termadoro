@@ -5,6 +5,8 @@ import (
 	"errors"
 	"strings"
 	"testing"
+
+	alarm "github.com/brettearle/termadoro/internal"
 )
 
 type alarmerSuccess struct {
@@ -127,7 +129,7 @@ func TestAlarm(t *testing.T) {
 		testAlarm := alarmerSuccess{
 			result: "",
 		}
-		err := RingAlarm(&testAlarm)
+		err := alarm.RingAlarm(&testAlarm)
 		if err != nil {
 			t.Errorf("got %v want %v", err, nil)
 		}
@@ -140,7 +142,7 @@ func TestAlarm(t *testing.T) {
 		testAlarm := alarmerFail{
 			result: "",
 		}
-		err := RingAlarm(&testAlarm)
+		err := alarm.RingAlarm(&testAlarm)
 		if err == nil {
 			t.Errorf("got %v want error", err)
 		}
