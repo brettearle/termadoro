@@ -12,11 +12,11 @@ ARCH=$(uname -m)
 
 # Set binary name based on OS and architecture
 if [[ "$OS" == "Linux" && "$ARCH" == "x86_64" ]]; then
-    BIN_NAME="termadoro-linux-amd64"
+    BIN_NAME="tdoro-linux-amd64"
 elif [[ "$OS" == "Darwin" && "$ARCH" == "x86_64" ]]; then
-    BIN_NAME="termadoro-darwin-amd64"
+    BIN_NAME="tdoro-darwin-amd64"
 elif [[ "$OS" == "Darwin" && "$ARCH" == "arm64" ]]; then
-    BIN_NAME="termadoro-darwin-arm64"
+    BIN_NAME="tdoro-darwin-arm64"
 else
     echo "Unsupported OS or architecture. Exiting."
     exit 1
